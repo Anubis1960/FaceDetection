@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 def resize(img, width, height):
     """
@@ -8,40 +8,54 @@ def resize(img, width, height):
     """
     return cv2.resize(img, (width, height), interpolation=cv2.INTER_AREA)
 
-img_path = "cropped_image.png"
 
-img = cv2.imread(img_path)
+def view_image(image, title="Image"):
+    """
+    Display the image in a window.
+    """
+    cv2.imshow(title, image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-img = resize(img, 400, 400)
 
-print(f"Image shape: {img.shape}")
+def main():
+    # Load the image
+    img_path = "cropped_image.png"
+    img = cv2.imread(img_path)
 
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Resize the image
+    img = resize(img, 400, 400)
 
-# Apply Gaussian blur to reduce noise and improve circle detection
-blurred_image = cv2.GaussianBlur(gray, (7, 7), 2)
+    # Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-cv2.imshow("blurred_image", blurred_image)
-cv2.waitKey(0)
+    # Apply Gaussian blur
+    blurred_image = cv2.GaussianBlur(gray, (7, 7), 2)
 
-cv2.imwrite("blurred_image.png", blurred_image)
+    view_image(blurred_image, "Blurred Image")
 
-edges = cv2.Canny(img,24,200)
+    # Save the blurred image
+    cv2.imwrite("blurred_image.png", blurred_image)
 
-cv2.imshow("edges", edges)
-cv2.waitKey(0)
+    # Edge detection using Canny
+    edges = cv2.Canny(img, 24, 200)
 
-cv2.imshow("difference", blurred_image - edges)
-cv2.waitKey(0)
+    view_image(edges, "Canny Edges")
 
-# Use Laplacian to detect edges
-edges = cv2.Laplacian(blurred_image, cv2.CV_64F)
-edges = np.uint8(np.absolute(edges))
+    # Show difference between blurred and edges
+    view_image(blurred_image - edges, "Difference between Blurred and Edges")
 
-cv2.imshow("edges", edges)
-cv2.waitKey(0)
+    # Use Laplacian to detect edges
+    edges = cv2.Laplacian(blurred_image, cv2.CV_64F)
+    edges = np.uint8(np.absolute(edges))
 
-sharpened_image = cv2.addWeighted(blurred_image, 1.5, edges, -0.5, 0)
+    view_image(edges, "Laplacian Edges")
 
-cv2.imshow("sharpened_image", sharpened_image)
-cv2.waitKey(0)
+    # Sharpen the image
+    sharpened_image = cv2.addWeighted(blurred_image, 1.5, edges, -0.5, 0)
+
+    view_image(sharpened_image, "Sharpened Image")
+
+
+if __name__ == "__main__":
+    main()
